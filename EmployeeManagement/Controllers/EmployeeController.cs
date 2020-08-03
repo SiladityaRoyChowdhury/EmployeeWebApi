@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using EmployeeManagement.Core;
 using EmployeeManagement.Data;
 using EmployeeManagement.Data.Repository;
 using EmployeeManagement.Models;
@@ -12,12 +13,12 @@ namespace EmployeeManagement.Controllers
 {
     public class EmployeeController : ApiController
     {
-        private readonly IEmployeeRepository _employeeRepository;
+        private readonly IEmployeeService _employeeService;
         private readonly IMapper _mapper;
 
-        public EmployeeController(IEmployeeRepository employeeRepository, IMapper mapper)
+        public EmployeeController(IEmployeeService employeeService, IMapper mapper)
         {
-            _employeeRepository = employeeRepository;
+            _employeeService = employeeService;
             _mapper = mapper;
         }
 
@@ -25,7 +26,7 @@ namespace EmployeeManagement.Controllers
         {
             try
             {
-                var result = await _employeeRepository.GetEmployees();
+                var result = await _employeeService.GetEmployees();
                 var data = _mapper.Map<IEnumerable<EmployeeModel>>(result);
                 return Ok(data);
             }
@@ -46,7 +47,7 @@ namespace EmployeeManagement.Controllers
                 }
                 if (ModelState.IsValid)
                 {
-                    var result = await _employeeRepository.GetEmployee(employeeId);
+                    var result = await _employeeService.GetEmployee(employeeId);
                     if (result == null) return NotFound();
                     return Ok(_mapper.Map<EmployeeModel>(result));
                 }
@@ -71,31 +72,9 @@ namespace EmployeeManagement.Controllers
                 }
                 if (ModelState.IsValid)
                 {
-                    var result = await _employeeRepository.CreateEmployee(_mapper.Map<Employee>(model));
+                    var result = await _employeeService.CreateEmployee(_mapper.Map<Employee>(model));
                     if(result)
                         return CreatedAtRoute("GetEmployee", new { employeeId = model.EmployeeId }, model);
-                    else
-                        return InternalServerError();
-                }
-                return BadRequest(ModelState);
-            }
-            catch (Exception ex)
-            {
-                return InternalServerError(ex);
-            }
-        }
-
-        [HttpPut]
-        public async Task<IHttpActionResult> PutAsync(EmployeeModel model)
-        {
-            try
-            {
-                if (ModelState.IsValid)
-                {
-                    if (await _employeeRepository.GetEmployee(model.EmployeeId) == null) return NotFound();
-                    var result = await _employeeRepository.UpdateEmployee(_mapper.Map<Employee>(model));
-                    if(result)
-                        return Ok("Employee details updated");
                     else
                         return InternalServerError();
                 }
@@ -118,9 +97,9 @@ namespace EmployeeManagement.Controllers
                 }
                 if (ModelState.IsValid)
                 {
-                    var employee = await _employeeRepository.GetEmployee(employeeId);
+                    var employee = await _employeeService.GetEmployee(employeeId);
                     if (employee == null) return NotFound();
-                    var result = await _employeeRepository.DeleteEmployee(_mapper.Map<Employee>(employee));
+                    var result = await _employeeService.DeleteEmployee(_mapper.Map<Employee>(employee));
                     if(result)
                         return StatusCode(HttpStatusCode.NoContent); //OK("Employee record deleted successfully");
                     else

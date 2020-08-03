@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using EmployeeManagement.Controllers;
+using EmployeeManagement.Core;
 using EmployeeManagement.Data;
 using EmployeeManagement.Data.Repository;
 using EmployeeManagement.Models;
@@ -17,12 +18,12 @@ namespace EmployeeManagementTest
 {
     public class EmployeeControllerTest
     {
-        private readonly Mock<IEmployeeRepository> mockEmployeeRepository;
+        private readonly Mock<IEmployeeService> mockEmployeeService;
         private readonly IMapper mapper;
 
         public EmployeeControllerTest()
         {
-            mockEmployeeRepository = new Mock<IEmployeeRepository>();
+            mockEmployeeService = new Mock<IEmployeeService>();
             var config = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile(new EmployeeMappingProfile());
@@ -35,9 +36,9 @@ namespace EmployeeManagementTest
         [Fact]
         public async Task CheckGetActionUsingMoqAsync()
         {
-            mockEmployeeRepository.Setup(x => x.GetEmployees())
+            mockEmployeeService.Setup(x => x.GetEmployees())
                                   .Returns(GetTestEmployees());
-            var employeeController = new EmployeeController(mockEmployeeRepository.Object, mapper);
+            var employeeController = new EmployeeController(mockEmployeeService.Object, mapper);
 
             // Act
             var result = await employeeController.Get();
@@ -50,7 +51,7 @@ namespace EmployeeManagementTest
         [Fact]
         public void CheckGetActionTest()
         {
-            mockEmployeeRepository.Setup(x => x.GetEmployees())
+            mockEmployeeService.Setup(x => x.GetEmployees())
                                  .Returns(GetTestEmployees());
 
             var employeeController = new EmployeeController(null, mapper);
@@ -61,9 +62,9 @@ namespace EmployeeManagementTest
         [Fact]
         public async Task CheckGetEmployeeActionUsingMoqAsync()
         {
-            mockEmployeeRepository.Setup(x => x.GetEmployee(1))
+            mockEmployeeService.Setup(x => x.GetEmployee(1))
                                   .Returns(GetTestEmployeeOne());
-            var employeeController = new EmployeeController(mockEmployeeRepository.Object, mapper);
+            var employeeController = new EmployeeController(mockEmployeeService.Object, mapper);
 
             // Act
             var result = await employeeController.Get(1);
@@ -76,7 +77,7 @@ namespace EmployeeManagementTest
         [Fact]
         public void CheckGetEmployeeActionTest()
         {
-            mockEmployeeRepository.Setup(x => x.GetEmployee(1))
+            mockEmployeeService.Setup(x => x.GetEmployee(1))
                                  .Returns(GetTestEmployeeOne);
 
             var employeeController = new EmployeeController(null, mapper);
@@ -87,10 +88,10 @@ namespace EmployeeManagementTest
         [Fact]
         public void CheckGetEmployeeActionBadRequestTest()
         {
-            mockEmployeeRepository.Setup(x => x.GetEmployee(1))
+            mockEmployeeService.Setup(x => x.GetEmployee(1))
                                  .Returns(GetTestEmployeeOne);
 
-            var employeeController = new EmployeeController(mockEmployeeRepository.Object, mapper);
+            var employeeController = new EmployeeController(mockEmployeeService.Object, mapper);
             var result = employeeController.Get(0).Result;
             Assert.IsType<InvalidModelStateResult>(result);
         }
@@ -98,10 +99,10 @@ namespace EmployeeManagementTest
         [Fact]
         public void CheckGetEmployeeActionNotFoundResultTest()
         {
-            mockEmployeeRepository.Setup(x => x.GetEmployee(1))
+            mockEmployeeService.Setup(x => x.GetEmployee(1))
                                   .Returns(GetTestEmployeeFour);
 
-            var employeeController = new EmployeeController(mockEmployeeRepository.Object, mapper);
+            var employeeController = new EmployeeController(mockEmployeeService.Object, mapper);
             var result = employeeController.Get(100).Result;
             Assert.IsType<NotFoundResult>(result);
         }
@@ -109,9 +110,9 @@ namespace EmployeeManagementTest
         [Fact]
         public async Task CheckPostEmployeeActionUsingMoqAsync()
         {
-            mockEmployeeRepository.Setup(x => x.CreateEmployee(GetTestEmployeeThree()))
+            mockEmployeeService.Setup(x => x.CreateEmployee(GetTestEmployeeThree()))
                                   .Returns(Task.FromResult(false));
-            var employeeController = new EmployeeController(mockEmployeeRepository.Object, mapper);
+            var employeeController = new EmployeeController(mockEmployeeService.Object, mapper);
             var result = await employeeController.PostAsync(GetTestEmployeeModelOne());
             Assert.IsType<InternalServerErrorResult>(result);
         }
@@ -127,9 +128,9 @@ namespace EmployeeManagementTest
         [Fact]
         public async Task CheckPostEmployeeActionBadRequestTest()
         {
-            mockEmployeeRepository.Setup(x => x.CreateEmployee(It.IsAny<Employee>()))
+            mockEmployeeService.Setup(x => x.CreateEmployee(It.IsAny<Employee>()))
                                   .Returns(Task.FromResult(true));
-            var employeeController = new EmployeeController(mockEmployeeRepository.Object, mapper);
+            var employeeController = new EmployeeController(mockEmployeeService.Object, mapper);
             var result = await employeeController.PostAsync(GetTestEmployeeModelTwo());
             Assert.IsType<InvalidModelStateResult>(result);
         }
@@ -137,11 +138,11 @@ namespace EmployeeManagementTest
         [Fact]
         public async Task CheckDeleteEmployeeActionUsingMoqAsync()
         {
-            mockEmployeeRepository.Setup(x => x.GetEmployee(2))
+            mockEmployeeService.Setup(x => x.GetEmployee(2))
                                  .Returns(GetTestEmployeeTwo());
-            mockEmployeeRepository.Setup(x => x.DeleteEmployee(It.IsAny<Employee>()))
+            mockEmployeeService.Setup(x => x.DeleteEmployee(It.IsAny<Employee>()))
                                   .Returns(Task.FromResult(true));
-            var employeeController = new EmployeeController(mockEmployeeRepository.Object, mapper);
+            var employeeController = new EmployeeController(mockEmployeeService.Object, mapper);
             var result = await employeeController.DeleteAsync(2);
             Assert.IsType<StatusCodeResult>(result);
             var contentResult = result as StatusCodeResult;
@@ -151,11 +152,11 @@ namespace EmployeeManagementTest
         [Fact]
         public async Task CheckDeleteEmployeeInternalServerErrorTest()
         {
-            mockEmployeeRepository.Setup(x => x.GetEmployee(2))
+            mockEmployeeService.Setup(x => x.GetEmployee(2))
                                  .Returns(GetTestEmployeeTwo());
-            mockEmployeeRepository.Setup(x => x.DeleteEmployee(It.IsAny<Employee>()))
+            mockEmployeeService.Setup(x => x.DeleteEmployee(It.IsAny<Employee>()))
                                   .Returns(Task.FromResult(false));
-            var employeeController = new EmployeeController(mockEmployeeRepository.Object, mapper);
+            var employeeController = new EmployeeController(mockEmployeeService.Object, mapper);
             var result = await employeeController.DeleteAsync(2);
             Assert.IsType<InternalServerErrorResult>(result);
         }
@@ -171,10 +172,10 @@ namespace EmployeeManagementTest
         [Fact]
         public void CheckDeleteEmployeeActionBadRequestTest()
         {
-            mockEmployeeRepository.Setup(x => x.DeleteEmployee(It.IsAny<Employee>()))
+            mockEmployeeService.Setup(x => x.DeleteEmployee(It.IsAny<Employee>()))
                                  .Returns(Task.FromResult(true));
 
-            var employeeController = new EmployeeController(mockEmployeeRepository.Object, mapper);
+            var employeeController = new EmployeeController(mockEmployeeService.Object, mapper);
             var result = employeeController.DeleteAsync(0).Result;
             Assert.IsType<InvalidModelStateResult>(result);
         }
@@ -182,12 +183,12 @@ namespace EmployeeManagementTest
         [Fact]
         public void CheckDeleteEmployeeActionNotFoundResultTest()
         {
-            mockEmployeeRepository.Setup(x => x.DeleteEmployee(It.IsAny<Employee>()))
+            mockEmployeeService.Setup(x => x.DeleteEmployee(It.IsAny<Employee>()))
                                   .Returns(Task.FromResult(true));
-            mockEmployeeRepository.Setup(x => x.GetEmployee(100))
+            mockEmployeeService.Setup(x => x.GetEmployee(100))
                                  .Returns(GetTestEmployeeFour);
 
-            var employeeController = new EmployeeController(mockEmployeeRepository.Object, mapper);
+            var employeeController = new EmployeeController(mockEmployeeService.Object, mapper);
             var result = employeeController.DeleteAsync(100).Result;
             Assert.IsType<NotFoundResult>(result);
         }

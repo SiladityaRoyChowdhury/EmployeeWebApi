@@ -1,5 +1,11 @@
 ﻿using EmployeeManagement.Data;
 using EmployeeManagement.Data.Repository;
+using Moq;
+using NSubstitute;
+using System;
+using System.Collections.Generic;
+using System.Data.Entity;
+using System.Linq;
 using Xunit;
 
 namespace EmployeeManagementTest
@@ -16,24 +22,21 @@ namespace EmployeeManagementTest
         }
 
         [Fact]
-        public void DeleteEmployeeViacContextFailTest()
-        {
-            var mockEmployeeContext = new EmployeeContext();
-            var service = new EmployeeRepository(mockEmployeeContext);
-            var result = service.DeleteEmployee(GetTestEmployeeTwo());
-            Assert.False(result.Result);
-        }
-
-        [Fact]
         public void DeleteEmployeeViacContextPassTest()
         {
-            var mockEmployeeContext = new EmployeeContext();
-            var service = new EmployeeRepository(mockEmployeeContext);
-            if (service.CreateEmployee(GetTestEmployeeThree()).Result)
-            {
-                var result = service.DeleteEmployee(GetTestEmployeeThree());
-                Assert.True(result.Result);
-            }
+            var mockset = new Mock<DbSet<Employee>>();
+            var mockcontext = new Mock<EmployeeContext>();
+            mockset.Setup(s => s.Create())
+                .Returns(() =>
+                {
+                    Mock<Employee> mock = new Mock<Employee>();
+                    return mock.Object;
+                });
+            mockcontext.Setup(m => m.Set<Employee>())
+                .Returns(() => mockset.Object);
+            var employeeRepository = new EmployeeRepository(mockcontext.Object);
+            var result = employeeRepository.DeleteEmployee(GetTestEmployeeThree());
+            Assert.False(result.Result);
         }
 
         [Fact]
@@ -72,7 +75,7 @@ namespace EmployeeManagementTest
         {
             return new Employee
             {
-                EmployeeId = 8,
+                EmployeeId = 1,
                 FirstName = "Dowry",
                 LastName = "Dowri",
                 EmployeeAddress = "GoldCoast",

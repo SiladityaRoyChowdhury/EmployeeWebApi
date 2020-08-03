@@ -1,16 +1,19 @@
-﻿using System;
+﻿using EmployeeManagement.Data;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
-namespace EmployeeManagement.Data.Repository
+namespace EmployeeManagement.Core
 {
-    public interface IEmployeeRepository
+    public interface IEmployeeService
     {
+        Task<bool> CreateEmployee(Employee employee);
+
         Task<IEnumerable<Employee>> GetEmployees();
 
         Task<Employee> GetEmployee(int employeeId);
-
-        Task<bool> CreateEmployee(Employee employee);
 
         Task<bool> DeleteEmployee(Employee employee);
     }

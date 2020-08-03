@@ -27,12 +27,6 @@ namespace EmployeeManagement.Data.Repository
             return await _context.Employees.ToListAsync();
         }
 
-        public async Task<bool> UpdateEmployee(Employee employee)
-        {
-            _context.Employees.AddOrUpdate(employee);
-            return (await _context.SaveChangesAsync() > 0);
-        }
-
         public async Task<Employee> GetEmployee(int employeeId)
         {
             return await _context.Employees.FindAsync(employeeId);

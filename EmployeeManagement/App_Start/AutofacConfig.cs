@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Autofac.Integration.WebApi;
 using AutoMapper;
+using EmployeeManagement.Core;
 using EmployeeManagement.Data;
 using EmployeeManagement.Data.Repository;
 using System.Reflection;
@@ -38,6 +39,10 @@ namespace EmployeeManagement.App_Start
 
             builder.RegisterType<EmployeeRepository>()
               .As<IEmployeeRepository>()
+              .InstancePerRequest();
+
+            builder.RegisterType<EmployeeService>()
+              .As<IEmployeeService>()
               .InstancePerRequest();
         }
     }
